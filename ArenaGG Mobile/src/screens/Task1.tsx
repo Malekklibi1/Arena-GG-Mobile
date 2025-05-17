@@ -1,0 +1,90 @@
+import { useNavigation, useRoute } from "@react-navigation/native";
+import React, { useState } from "react";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
+import { Celebrations } from "../components/Celebrations";
+import { Task1Game } from "../components/Games/Task1Game";
+import { GameScreen } from "../components/GameScreen";
+import { ResultModal } from "../components/ResultModal";
+import { task1Levels } from "../constants/GameLevel";
+import { useCountDown } from "../hooks/useCountDown";
+import { useAppState } from "../stores/state";
+
+const Task1 = () => {
+  const { state, setState } = useAppState();
+  const task1Progress = state.taskProgress?.[0] || { currLevel: 0, totalLevel: 1 };
+  const [result, setResult] = useState<"success" | "error" | "">("");
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { tiles, grid } = task1Levels[task1Progress.currLevel];
+  const { countDown } = useCountDown(5);
+
+  if (task1Progress.currLevel === task1Progress.totalLevel)
+    return <Celebrations />;
+
+  const onRefresh = () => {
+    if (navigation.setParams) {
+      navigation.setParams({ key: Math.random() });
+    } else {
+      navigation.navigate(route.name as never, { key: Math.random() } as never);
+    }
+  };
+
+  const updateProgress = () => {
+    setState((prev: any) => {
+      const newProgress = [...(prev.taskProgress || [])];
+      newProgress[0] = { ...newProgress[0], currLevel: newProgress[0].currLevel + 1 };
+      return {
+        ...prev,
+        taskProgress: newProgress,
+        result: { ...prev.result, task1: `Max Grid: ${grid}, Max Tiles: ${tiles}` },
+      };
+    });
+  };
+
+  return (
+    <GameScreen onRefresh={onRefresh} countDown={countDown} {...task1Progress}>
+      <ResultModal
+        result={result}
+        onClickBtnB={() => {
+          if (result === "success") {
+            updateProgress();
+          } else {
+            onRefresh();
+          }
+        }}
+        onClickBtnA={() => {
+          if (result === "success") {
+            updateProgress();
+          }
+          navigation.navigate("Task 1" as never);
+        }}
+      />
+      <View
+        style={{
+          marginBottom: 20,
+          flexDirection: "row",
+          width: 300,
+        }}
+      >
+        <Text style={{ flex: 1 }} variant="titleMedium">
+          Tiles: {tiles}
+        </Text>
+        <Text variant="titleMedium">Grid: {grid}</Text>
+      </View>
+      <Task1Game
+        tiles={tiles}
+        grid={grid}
+        visible={countDown > 0}
+        onSuccess={() => {
+          setResult("success");
+        }}
+        onError={() => {
+          setResult("error");
+        }}
+      />
+    </GameScreen>
+  );
+};
+
+export default Task1;
