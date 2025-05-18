@@ -23,11 +23,7 @@ const Task1 = () => {
     return <Celebrations />;
 
   const onRefresh = () => {
-    if (navigation.setParams) {
-      navigation.setParams({ key: Math.random() });
-    } else {
-      navigation.navigate(route.name as never, { key: Math.random() } as never);
-    }
+    navigation.navigate(route.name as never);
   };
 
   const updateProgress = () => {

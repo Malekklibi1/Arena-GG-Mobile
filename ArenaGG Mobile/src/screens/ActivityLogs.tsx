@@ -5,13 +5,13 @@ import { ScrollView } from "react-native-gesture-handler";
 import { useActivityLog } from "../stores/useActivityLog";
 
 const ActivityLogs = () => {
-  const { activities } = useActivityLog((s) => s);
+  const { activityLog } = useActivityLog((s) => s);
 
   return (
     <ScrollView>
-      {activities.map((activity, idx) => (
+      {activityLog.map((activity, idx) => (
         <Text key={idx} style={{ marginVertical: 5 }} variant="labelSmall">
-          {activity.timestamp}: {activity.message}
+          {activity}
         </Text>
       ))}
     </ScrollView>
