@@ -20,6 +20,7 @@ export const TabButton = ({
   visible,
   onClick,
   success,
+  hasIcon,
 }: {
   active: boolean;
   success: boolean;
@@ -27,23 +28,31 @@ export const TabButton = ({
   baseWidth: number;
   visible: boolean;
   onClick: () => void;
+  hasIcon?: boolean;
 }) => {
   let backgroundColor = active ? colors["gray-300"] : colors.white;
+  let displayIcon = "";
+  let displayColor = color;
 
+  // ORIGINAL: Only show icon after memorization phase, not during
+  if (!visible && hasIcon) {
+    displayIcon = icon;
+    displayColor = color;
+  }
   if (success) {
-    if (icon.length) {
-      backgroundColor = colors["green-400"];
-      icon = "check";
-    } else {
-      backgroundColor = colors["red-400"];
-      icon = "window-close";
-    }
+    backgroundColor = colors["green-400"];
+    displayIcon = "check";
+    displayColor = colors.white;
+  } else if (success === false && !visible && hasIcon) {
+    backgroundColor = colors["red-400"];
+    displayIcon = "window-close";
+    displayColor = colors.white;
   }
 
   return (
     <IconButton
-      icon={visible || success ? icon : ""}
-      iconColor={success ? colors.white : color}
+      icon={displayIcon}
+      iconColor={displayColor}
       size={baseWidth * 8}
       style={{
         marginHorizontal: baseWidth * 0.5,
@@ -70,23 +79,32 @@ export const Task3Game: React.FC<{
   const visible = countDown > 0;
   const [iconIdx, setIconIdx] = useState(0);
   const baseWidth = widthTable[grid];
-  let i = 0,
-    j = 0;
-  setIconIdx;
+
+  // Precompute active cards
   const activeCards = useMemo(
-    () => generateRandomNumberList(cards, grid * grid),
+    () => Array.from(generateRandomNumberList(cards, grid * grid)),
     [cards, grid]
   );
 
-  const [activeImages, icons] = useMemo(
-    () => [
-      generateRandomNumberList(images, cards),
-      Array.from(generateRandomNumberList(images, IconList.length)).map(
-        (x) => IconList[x]
-      ),
-    ],
-    [images, cards]
-  );
+  // Precompute which active card gets which icon
+  const [activeImages, icons] = useMemo(() => {
+    const activeImagesSet = generateRandomNumberList(images, cards);
+    const iconIndices = Array.from(generateRandomNumberList(images, IconList.length));
+    const iconList = iconIndices.map((x) => IconList[x]);
+    // Map: cardIdx -> iconIdx (only for active cards that have an icon)
+    const cardToIconIdx: Record<number, number> = {};
+    let iconCounter = 0;
+    activeCards.forEach((cardIdx, i) => {
+      if (activeImagesSet.has(i)) {
+        cardToIconIdx[cardIdx] = iconCounter;
+        iconCounter++;
+      }
+    });
+    return [activeImagesSet, iconList, cardToIconIdx] as const;
+  }, [images, cards, activeCards]);
+
+  const cardToIconIdx = icons[2] || {}; // icons[2] is cardToIconIdx
+  const iconList = icons[1] || [];
 
   return (
     <>
@@ -102,15 +120,23 @@ export const Task3Game: React.FC<{
           {countDown}
         </Text>
       ) : (
-        <IconButton
-          icon={icons[iconIdx].icon}
-          style={{
-            marginTop: -100,
-            marginBottom: 75,
-          }}
-          size={baseWidth * 10}
-          iconColor={icons[iconIdx].color}
-        />
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <Text style={{ fontSize: 20, marginBottom: 10, color: colors["blue-600"] }}>
+            Tap the card with this icon:
+          </Text>
+          <IconButton
+            icon={iconList[iconIdx]?.icon}
+            style={{
+              marginTop: 0,
+              marginBottom: 0,
+              backgroundColor: colors["gray-200"],
+              borderRadius: 40,
+              alignSelf: "center",
+            }}
+            size={baseWidth * 10}
+            iconColor={iconList[iconIdx]?.color}
+          />
+        </View>
       )}
       <View
         style={{
@@ -136,14 +162,13 @@ export const Task3Game: React.FC<{
         {Array(grid * grid)
           .fill(0)
           .map((_, idx) => {
-            const active = activeCards.has(idx),
-              hasIcon = active && activeImages.has(i++),
-              currIconIdx = hasIcon ? j++ : 1000;
-
+            const isActive = activeCards.includes(idx);
+            const iconIdxForCard = cardToIconIdx[idx];
+            const hasIcon = typeof iconIdxForCard === "number";
             return (
               <TabButton
                 onClick={() => {
-                  if (currIconIdx === iconIdx) {
+                  if (iconIdxForCard === iconIdx) {
                     if (iconIdx === images - 1) onSuccess();
                     else setIconIdx((i) => i + 1);
                   } else {
@@ -152,9 +177,10 @@ export const Task3Game: React.FC<{
                   }
                 }}
                 visible={visible}
-                active={active}
-                success={currIconIdx < iconIdx}
-                iconSource={hasIcon ? icons[currIconIdx] : {}}
+                active={isActive}
+                success={hasIcon && iconIdxForCard < iconIdx}
+                iconSource={hasIcon ? iconList[iconIdxForCard] : {}}
+                hasIcon={hasIcon}
                 key={idx}
                 baseWidth={baseWidth}
               />

@@ -12,13 +12,24 @@ const Task2 = () => {
   const { state, setState } = useAppState();
   const task2Progress = state.taskProgress?.[1] || { currLevel: 0, totalLevel: 1 };
   const [result, setResult] = useState<"success" | "error" | "">("");
+  const [gameKey, setGameKey] = useState(0);
   const navigation = useNavigation();
   const route = useRoute();
   const { numLength, reverse } = task2Levels[task2Progress.currLevel];
   const { countDown } = useCountDown(numLength + 1);
 
-  if (task2Progress.currLevel === task2Progress.totalLevel)
+  const isComplete = task2Progress.currLevel === task2Progress.totalLevel;
+
+  React.useEffect(() => {
+    if (isComplete) {
+      const timeout = setTimeout(() => navigation.navigate("Task 3" as never), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [isComplete, navigation]);
+
+  if (isComplete) {
     return <Celebrations />;
+  }
 
   const onRefresh = () => {
     navigation.navigate(route.name as never);
@@ -43,18 +54,25 @@ const Task2 = () => {
         onClickBtnB={() => {
           if (result === "success") {
             updateProgress();
+            setResult("");
+            setGameKey((k) => k + 1);
           } else {
+            setResult("");
+            setGameKey((k) => k + 1);
             onRefresh();
           }
         }}
         onClickBtnA={() => {
           if (result === "success") {
             updateProgress();
+            setResult("");
+            setGameKey((k) => k + 1);
           }
           navigation.navigate("Task 2" as never);
         }}
       />
       <Task2Game
+        key={gameKey}
         level={numLength}
         reverse={reverse}
         countDown={countDown}

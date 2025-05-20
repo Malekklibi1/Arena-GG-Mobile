@@ -1,7 +1,7 @@
 import NetInfo from "@react-native-community/netinfo";
 import { useFonts } from "expo-font";
 import React from "react";
-import { Text, TextInput } from "react-native";
+import { Text, TextInput, Image } from "react-native";
 import "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -13,7 +13,8 @@ import {
   Provider as PaperProvider,
 } from "react-native-paper";
 import { colors, fonts } from "./src/constants/AppStyle";
-import "./src/lib/firbase";
+
+// import "./src/lib/firbase";
 
 if ((Text as any).defaultProps == null) {
   (Text as any).defaultProps = {};
@@ -72,6 +73,10 @@ const App = () => {
       <SafeAreaProvider>
         <SafeAreaView />
         <PaperProvider theme={theme}>
+          <Image
+            source={require("./src/assets/ArenaGG logo.png")}
+            style={{ width: 180, height: 60, alignSelf: "center", marginTop: 10, resizeMode: "contain" }}
+          />
           <MainNavigator />
         </PaperProvider>
         <Toast

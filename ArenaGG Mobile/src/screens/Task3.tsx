@@ -12,13 +12,23 @@ const Task3 = () => {
   const { state, setState } = useAppState();
   const task3Progress = state.taskProgress?.[2] || { currLevel: 0, totalLevel: 1 };
   const [result, setResult] = useState<"success" | "error" | "">("");
+  const [gameKey, setGameKey] = useState(0);
   const navigation = useNavigation();
   const route = useRoute();
   const { cards, images, grid } = task3Levels[task3Progress.currLevel];
   const { countDown } = useCountDown(5);
 
-  if (task3Progress.currLevel === task3Progress.totalLevel)
+  const isComplete = task3Progress.currLevel === task3Progress.totalLevel;
+  React.useEffect(() => {
+    if (isComplete) {
+      const timeout = setTimeout(() => navigation.navigate("Task 4" as never), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [isComplete, navigation]);
+
+  if (isComplete) {
     return <Celebrations />;
+  }
 
   const onRefresh = () => {
     navigation.navigate(route.name as never);
@@ -44,6 +54,8 @@ const Task3 = () => {
           if (result === "success") {
             updateProgress();
           } else {
+            setResult("");
+            setGameKey((k) => k + 1); // force remount
             onRefresh();
           }
         }}
@@ -55,6 +67,7 @@ const Task3 = () => {
         }}
       />
       <Task3Game
+        key={gameKey}
         countDown={countDown}
         cards={cards}
         images={images}

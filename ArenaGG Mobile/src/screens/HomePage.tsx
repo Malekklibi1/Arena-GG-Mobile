@@ -128,7 +128,16 @@ export const HomePage = ({ navigation }: any) => {
   const { height } = Dimensions.get("window");
   const { state } = useAppState();
   const userId = state.userId;
-  const taskProgress = state.taskProgress || [];
+  // Ensure taskProgress is always an array of 5 objects
+  const taskProgress = Array.isArray(state.taskProgress) && state.taskProgress.length === 5
+    ? state.taskProgress
+    : [
+        { currLevel: 0, totalLevel: 1 },
+        { currLevel: 0, totalLevel: 1 },
+        { currLevel: 0, totalLevel: 1 },
+        { currLevel: 0, totalLevel: 1 },
+        { currLevel: 0, totalLevel: 1 },
+      ];
 
   if (!userId) navigation.navigate("Landing Page");
 

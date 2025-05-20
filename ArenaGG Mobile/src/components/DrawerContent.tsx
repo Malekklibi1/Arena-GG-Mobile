@@ -28,7 +28,16 @@ export const DrawerContent = ({ navigation, state: navState }: any) => {
   if (!isNaN(navState.index) && navState.routes.length > 0)
     activeRoute = navState.routes[navState.index].name || "";
 
-  const resetTaskProgress = () => setState((prev: any) => ({ ...prev, taskProgress: [] }));
+  const resetTaskProgress = () => setState((prev: any) => ({
+    ...prev,
+    taskProgress: [
+      { currLevel: 0, totalLevel: 1 },
+      { currLevel: 0, totalLevel: 1 },
+      { currLevel: 0, totalLevel: 1 },
+      { currLevel: 0, totalLevel: 1 },
+      { currLevel: 0, totalLevel: 1 },
+    ],
+  }));
   const resetResult = () => setState((prev: any) => ({ ...prev, result: {} }));
   const logout = () => setState((prev: any) => ({ ...prev, userId: "" }));
 
@@ -46,7 +55,7 @@ export const DrawerContent = ({ navigation, state: navState }: any) => {
           }}
         >
           <Image
-            source={require("../assets/icon.png")}
+            source={require("../assets/ArenaGG logo.png")}
             style={{ width: 150, height: 150, marginBottom: 20 }}
           />
           <View

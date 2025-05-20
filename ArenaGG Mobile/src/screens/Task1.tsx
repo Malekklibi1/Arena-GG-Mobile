@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 import { Celebrations } from "../components/Celebrations";
@@ -14,13 +14,24 @@ const Task1 = () => {
   const { state, setState } = useAppState();
   const task1Progress = state.taskProgress?.[0] || { currLevel: 0, totalLevel: 1 };
   const [result, setResult] = useState<"success" | "error" | "">("");
+  const [gameKey, setGameKey] = useState(0);
   const navigation = useNavigation();
   const route = useRoute();
   const { tiles, grid } = task1Levels[task1Progress.currLevel];
   const { countDown } = useCountDown(5);
 
-  if (task1Progress.currLevel === task1Progress.totalLevel)
+  const isComplete = task1Progress.currLevel === task1Progress.totalLevel;
+
+  useEffect(() => {
+    if (isComplete) {
+      const timeout = setTimeout(() => navigation.navigate("Task 2" as never), 1500);
+      return () => clearTimeout(timeout);
+    }
+  }, [isComplete, navigation]);
+
+  if (isComplete) {
     return <Celebrations />;
+  }
 
   const onRefresh = () => {
     navigation.navigate(route.name as never);
@@ -28,7 +39,11 @@ const Task1 = () => {
 
   const updateProgress = () => {
     setState((prev: any) => {
-      const newProgress = [...(prev.taskProgress || [])];
+      // Always ensure newProgress has 5 objects
+      let newProgress = Array.isArray(prev.taskProgress) ? [...prev.taskProgress] : [];
+      while (newProgress.length < 5) {
+        newProgress.push({ currLevel: 0, totalLevel: 1 });
+      }
       newProgress[0] = { ...newProgress[0], currLevel: newProgress[0].currLevel + 1 };
       return {
         ...prev,
@@ -45,13 +60,19 @@ const Task1 = () => {
         onClickBtnB={() => {
           if (result === "success") {
             updateProgress();
+            setResult("");
+            setGameKey((k) => k + 1);
           } else {
+            setResult("");
+            setGameKey((k) => k + 1);
             onRefresh();
           }
         }}
         onClickBtnA={() => {
           if (result === "success") {
             updateProgress();
+            setResult("");
+            setGameKey((k) => k + 1);
           }
           navigation.navigate("Task 1" as never);
         }}
@@ -69,6 +90,7 @@ const Task1 = () => {
         <Text variant="titleMedium">Grid: {grid}</Text>
       </View>
       <Task1Game
+        key={gameKey}
         tiles={tiles}
         grid={grid}
         visible={countDown > 0}

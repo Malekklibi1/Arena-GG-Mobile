@@ -4,10 +4,10 @@
     "slug": "arena-gg",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/xl-space-icon.png",
+    "icon": "./src/assets/ArenaGG logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/splash.png",
+      "image": "./src/assets/splash-arena.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,7 +22,7 @@
     "android": {
       "package": "com.creaitors.arenagg",
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/space-icon.png",
+        "foregroundImage": "./src/assets/ArenaGG logo.png",
         "backgroundColor": "#FFFFFF"
       }
     },
